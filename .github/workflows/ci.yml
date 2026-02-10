@@ -8,19 +8,19 @@ jobs:
   sanity:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Compile Python scripts
+      - name: Compile scripts
         run: python -m py_compile scripts/*.py
-
-      - name: Smoke run healthcheck (no failure on offline)
-        run: python scripts/healthcheck.py --dns example.com --tcp localhost:3000 localhost:9090 --http http://localhost:3000 http://localhost:9090/-/ready || true
 
       - name: Smoke run log_triage
         run: python scripts/log_triage.py README.md --top 5
+
+      - name: Smoke run healthcheck (allow failures without services)
+        run: python scripts/healthcheck.py --dns example.com --tcp localhost:3000 localhost:9090 --http http://localhost:3000 http://localhost:9090/-/ready || true
+
+
