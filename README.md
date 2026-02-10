@@ -1,76 +1,56 @@
+# NOC / Ops Monitoring Lab (Prometheus + Grafana)
 
-# NOC / Network Ops Proof Pack (Junior-ready)
+Local lab environment for monitoring + alerting + incident drills.
 
-A compact portfolio proving **real NOC / Ops work**: monitoring + alerting, target health validation, incident-style writeups, runbooks, and small automation scripts.
-
-Designed to run easily on **Windows + WSL2 Ubuntu** with **Docker Desktop**.
-
----
-
-## What this proves 
-- Set up **monitoring + alerting** (Prometheus/Grafana) and verify **targets UP/DOWN**
-- Triage incidents using **symptoms → checks → fix → prevention**
-- Document clearly (runbooks + incident reports) and automate common checks (scripts)
+Runs well on Windows + WSL2 Ubuntu with Docker Desktop.
 
 ---
 
-## Stack
-- **Prometheus** (metrics + alert rules)
-- **Grafana** (dashboards)
-- **Node Exporter** (host metrics)
-- **Docker Compose** (local lab)
+## Components
+- Prometheus (metrics + alerting rules)
+- Grafana (dashboards)
+- Node Exporter (host metrics)
+- Docker Compose (orchestration)
 
 Ports:
-- Grafana: `http://localhost:3000` (admin / admin)
-- Prometheus: `http://localhost:9090`
-  - Targets: `http://localhost:9090/targets`
-  - Alerts: `http://localhost:9090/alerts`
+- Grafana: http://localhost:3000 (admin/admin)
+- Prometheus: http://localhost:9090
+  - Targets: http://localhost:9090/targets
+  - Alerts: http://localhost:9090/alerts
 
 ---
 
-## Repo contents
-
-### Monitoring Lab
-- Prometheus + Grafana + Node Exporter (Docker Compose)
-- Alert rules:
-  - `InstanceDown`
-  - `HighCPUUsage`
-  - `LowDiskSpaceRoot`
-  - `LowDiskSpaceMntC` (WSL/Windows host disk)
-
-### Documentation (Ops-style)
-- Runbooks (5):
-  - [Service Down](runbooks/RUNBOOK_Service_Down.md)
-  - [DNS Issue](runbooks/RUNBOOK_DNS_Issue.md)
-  - [High CPU](runbooks/RUNBOOK_High_CPU.md)
-  - [Disk Full](runbooks/RUNBOOK_Disk_Full.md)
-  - [Timeout vs Refused](runbooks/RUNBOOK_Network_Timeout_vs_Refused.md)
-- Alert playbook:
-  - [ALERT_PLAYBOOK](runbooks/ALERT_PLAYBOOK.md)
-- Incident writeups (3):
-  - [INCIDENT_Service_Down](incidents/INCIDENT_Service_Down.md)
-  - [INCIDENT_Disk_Full](incidents/INCIDENT_Disk_Full.md)
-  - [INCIDENT_DNS](incidents/INCIDENT_DNS.md)
-
-### Automation
-- `scripts/healthcheck.py` — DNS/TCP/HTTP checks (PASS/FAIL)
-- `scripts/log_triage.py` — summarizes common error patterns in a log file
+## Layout
+- `monitoring/` — Prometheus + Grafana provisioning
+- `runbooks/` — troubleshooting runbooks + alert playbook
+- `incidents/` — incident-style writeups (drills)
+- `scripts/` — health check + log triage scripts
+- `assets/` — screenshots/evidence
 
 ---
 
-## Quick Start
+## Quick start
 
-### 1) Start the stack
+Start:
 ```bash
 docker compose up -d
 docker compose ps
 ````
 
-### 2) Stop the stack
+Stop:
 
 ```bash
 docker compose down
 ```
+
+---
+
+## Alerts configured
+
+* `InstanceDown`
+* `HighCPUUsage`
+* `LowDiskSpaceRoot`
+* `LowDiskSpaceMntC`
 
 ---
 
@@ -87,9 +67,9 @@ docker compose down
 
 ---
 
-## Incident drills (reproducible)
+## Drills
 
-### Drill A — InstanceDown (exporter scrape failure)
+### Drill A — InstanceDown
 
 ```bash
 docker stop noc_node_exporter
@@ -97,36 +77,25 @@ docker stop noc_node_exporter
 docker start noc_node_exporter
 ```
 
-Then confirm:
-
-* Prometheus Targets returns to **UP**
-* Alert returns to **inactive**
-
-### Drill B — Disk risk workflow (WSL/Windows host)
+### Drill B — Disk workflow
 
 ```bash
 df -h
 sudo du -sh /* 2>/dev/null | sort -h | tail
 ```
 
-Document:
-
-* biggest consumers
-* safe cleanup steps
-* prevention actions (retention/logrotate/alerts)
-
 ---
 
-## Scripts usage
+## Scripts
 
-### Health checks
+Health checks:
 
 ```bash
 python3 scripts/healthcheck.py
 python3 scripts/healthcheck.py --dns google.com github.com --tcp localhost:3000 localhost:9090 --http http://localhost:3000 http://localhost:9090/-/ready
 ```
 
-### Log triage
+Log triage:
 
 ```bash
 python3 scripts/log_triage.py /path/to/logfile.log
@@ -136,21 +105,18 @@ python3 scripts/log_triage.py /path/to/logfile.log --patterns ERROR Exception ti
 
 ---
 
-## Troubleshooting (WSL2/Docker Desktop)
+## Troubleshooting (WSL2 bind-mount issues)
 
-If `docker compose restart prometheus` fails with a bind-mount error, recreate containers:
+If a container restart fails with a bind-mount error:
 
 ```bash
 docker compose down --remove-orphans
 docker compose up -d --force-recreate
 ```
 
-If it still persists, reset WSL then retry:
+If still broken, reset WSL then retry (PowerShell):
 
 ```powershell
 wsl --shutdown
-```
-
-
 
 
