@@ -36,4 +36,3 @@ groups:
         annotations:
           summary: "Low disk space on /mnt/c"
           description: "Disk free < 15% on /mnt/c for 10 minutes ({{ $labels.instance }})."
-
