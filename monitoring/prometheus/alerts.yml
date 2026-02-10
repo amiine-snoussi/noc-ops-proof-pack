@@ -1,0 +1,39 @@
+groups:
+  - name: noc_alerts
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Target down"
+          description: "Prometheus cannot scrape {{ $labels.job }} ({{ $labels.instance }}) for 1 minute."
+
+      - alert: HighCPUUsage
+        expr: (100 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage > 85% for 10 minutes on {{ $labels.instance }}."
+
+      - alert: LowDiskSpaceRoot
+        expr: (node_filesystem_avail_bytes{mountpoint="/", fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{mountpoint="/", fstype!~"tmpfs|overlay"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on /"
+          description: "Disk free < 15% for 5 minutes on {{ $labels.instance }}."
+
+      - alert: LowDiskSpaceMntC
+        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/c", fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{mountpoint="/mnt/c", fstype!~"tmpfs|overlay"}) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on /mnt/c"
+          description: "Disk free < 15% on /mnt/c for 10 minutes ({{ $labels.instance }})."
+
